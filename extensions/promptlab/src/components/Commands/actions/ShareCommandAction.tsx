@@ -1,9 +1,9 @@
 import { Action, Icon, Toast, showToast } from "@raycast/api";
-import { Command, StoreCommand } from "../../../utils/types";
-import { STORE_ENDPOINT, STORE_KEY } from "../../../utils/constants";
+import { Command, StoreCommand } from "../../../lib/commands/types";
+import { STORE_ENDPOINT, STORE_KEY } from "../../../lib/constants";
 import fetch from "node-fetch";
 import { defaultAdvancedSettings } from "../../../data/default-advanced-settings";
-import { getActionShortcut, isActionEnabled } from "../../../utils/action-utils";
+import { getActionShortcut, isActionEnabled } from "../../../lib/action-utils";
 
 /**
  * Action to share a command to the PromptLab store.
@@ -64,7 +64,8 @@ export default function ShareCommandAction(props: {
                 useRectangleDetection: command.useRectangleDetection ? "TRUE" : "FALSE",
                 useBarcodeDetection: command.useBarcodeDetection ? "TRUE" : "FALSE",
                 useFaceDetection: command.useFaceDetection ? "TRUE" : "FALSE",
-                outputKind: command.outputKind || "Detaiil",
+                useHorizonDetection: command.useHorizonDetection ? "TRUE" : "FALSE",
+                outputKind: command.outputKind || "Detail",
                 actionScript: command.actionScript || "None",
                 showResponse: command.showResponse ? "TRUE" : "FALSE",
                 description: command.description || "None",

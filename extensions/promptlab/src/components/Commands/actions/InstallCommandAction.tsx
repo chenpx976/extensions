@@ -1,7 +1,7 @@
 import { Action, Icon, LocalStorage, Toast, showToast } from "@raycast/api";
-import { Command, StoreCommand } from "../../../utils/types";
+import { Command, StoreCommand } from "../../../lib/commands/types";
 import { defaultAdvancedSettings } from "../../../data/default-advanced-settings";
-import { getActionShortcut, isActionEnabled } from "../../../utils/action-utils";
+import { getActionShortcut, isActionEnabled } from "../../../lib/action-utils";
 
 /**
  * Action to install a command from the PromptLab store.
@@ -53,6 +53,7 @@ export default function InstallCommandAction(props: {
           useRectangleDetection: command.useRectangleDetection == "TRUE" ? true : false,
           useBarcodeDetection: command.useBarcodeDetection == "TRUE" ? true : false,
           useFaceDetection: command.useFaceDetection == "TRUE" ? true : false,
+          useHorizonDetection: command.useHorizonDetection == "TRUE" ? true : false,
           outputKind: command.outputKind,
           actionScript: command.actionScript,
           showResponse: command.showResponse == "TRUE" ? true : false,
@@ -79,7 +80,7 @@ export default function InstallCommandAction(props: {
           Promise.resolve(LocalStorage.allItems()).then((commandData) => {
             const commandDataFiltered = Object.values(commandData).filter(
               (cmd, index) =>
-                !Object.keys(commandData)[index].startsWith("--") && !Object.keys(cmd)[index].startsWith("id-")
+                !Object.keys(commandData)[index].startsWith("--") && !Object.keys(cmd)[index].startsWith("id-"),
             );
             setCommands(commandDataFiltered.map((data) => JSON.parse(data)));
           });

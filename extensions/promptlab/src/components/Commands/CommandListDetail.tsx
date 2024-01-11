@@ -1,14 +1,7 @@
 import { List } from "@raycast/api";
-import {
-  Command,
-  StoreCommand,
-  isCommand,
-  NumberConfigField,
-  BooleanConfigField,
-  StringConfigField,
-  isStoreCommand,
-  isTrueStr,
-} from "../../utils/types";
+import { isTrueStr } from "../../lib/common/types";
+import { Command, StoreCommand, isCommand, isStoreCommand } from "../../lib/commands/types";
+import { NumberConfigField, BooleanConfigField, StringConfigField } from "../../lib/commands/config/types";
 
 export default function CommandListDetail(props: { command: Command | StoreCommand }) {
   const { command } = props;
@@ -94,8 +87,8 @@ ${
         command.minNumFiles == "0"
           ? "N/A"
           : command.acceptedFileExtensions?.length && command.acceptedFileExtensions !== "None"
-          ? command.acceptedFileExtensions
-          : "Any"
+            ? command.acceptedFileExtensions
+            : "Any"
       } |
 | Creativity | ${command.temperature == undefined || command.temperature == "" ? "1.0" : command.temperature} |
 | Use File Metadata? | ${isTrueStr(command.useMetadata) ? "Yes" : "No"} |
@@ -104,6 +97,7 @@ ${
 | Use Audio Transcription? | ${isTrueStr(command.useAudioDetails) ? "Yes" : "No"} |
 | Use Barcode Detection? | ${isTrueStr(command.useBarcodeDetection) ? "Yes" : "No"} |
 | Use Face Detection? | ${isTrueStr(command.useFaceDetection) ? "Yes" : "No"} |
+| Use Horizon Detection? | ${isTrueStr(command.useHorizonDetection) ? "Yes" : "No"} |
 | Use Rectangle Detection? | ${isTrueStr(command.useRectangleDetection) ? "Yes" : "No"} |
 | Use Saliency Analysis? | ${isTrueStr(command.useSaliencyAnalysis) ? "Yes" : "No"} |
 ${isCommand(command) ? `| Model | ${command.model || "Not Specified"} |` : ``}
@@ -119,7 +113,7 @@ ${(isCommand(command) ? command.setupConfig : JSON.parse(command.setupConfig)).f
     (field: NumberConfigField | BooleanConfigField | StringConfigField) =>
       `| ${field.name} | ${
         field.description == undefined || field.description.trim().length == 0 ? "None" : field.description
-      } | ${field.value == undefined || field.value.toString().trim().length == 0 ? "None" : field.value} |`
+      } | ${field.value == undefined || field.value.toString().trim().length == 0 ? "None" : field.value} |`,
   )
   .join("\n")}
 `

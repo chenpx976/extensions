@@ -1,10 +1,11 @@
 import { Action, ActionPanel, Alert, Icon, LocalStorage, Toast, confirmAlert, showToast } from "@raycast/api";
-import { Command, StoreCommand, isCommand, isStoreCommand, isTrueStr } from "../../../utils/types";
+import { isTrueStr } from "../../../lib/common/types";
+import { Command, StoreCommand, isCommand, isStoreCommand } from "../../../lib/commands/types";
 import CommandForm from "../CommandForm";
-import { QUICKLINK_URL_BASE } from "../../../utils/constants";
-import { updateCommand } from "../../../utils/command-utils";
+import { QUICKLINK_URL_BASE } from "../../../lib/constants";
+import { updateCommand } from "../../../lib/commands/command-utils";
 import { defaultAdvancedSettings } from "../../../data/default-advanced-settings";
-import { anyActionsEnabled, getActionShortcut } from "../../../utils/action-utils";
+import { anyActionsEnabled, getActionShortcut } from "../../../lib/action-utils";
 
 /**
  * Section for actions related to modifying commands (editing, deleting, etc.).
@@ -34,7 +35,7 @@ export const CommandControlsActionsSection = (props: {
         "DeleteAllCommandsAction",
         "InstallAllCommandsAction",
       ],
-      settings
+      settings,
     )
   ) {
     return null;
@@ -148,6 +149,7 @@ export const EditCommandAction = (props: {
             useRectangleDetection: command.useRectangleDetection,
             useBarcodeDetection: command.useBarcodeDetection,
             useFaceDetection: command.useFaceDetection,
+            useHorizonDetection: command.useHorizonDetection,
             outputKind: command.outputKind,
             actionScript: command.actionScript,
             showResponse: command.showResponse,
@@ -282,6 +284,7 @@ export const CreateDerivativeAction = (props: {
             useRectangleDetection: isTrueStr(command.useRectangleDetection),
             useBarcodeDetection: isTrueStr(command.useBarcodeDetection),
             useFaceDetection: isTrueStr(command.useFaceDetection),
+            useHorizonDetection: isTrueStr(command.useHorizonDetection),
             outputKind: command.outputKind,
             actionScript: command.actionScript,
             showResponse: isTrueStr(command.showResponse),
@@ -370,6 +373,7 @@ export const InstallAllCommandsAction = (props: {
             useRectangleDetection: command.useRectangleDetection == "TRUE" ? true : false,
             useBarcodeDetection: command.useBarcodeDetection == "TRUE" ? true : false,
             useFaceDetection: command.useFaceDetection == "TRUE" ? true : false,
+            useHorizonDetection: command.useHorizonDetection == "TRUE" ? true : false,
             outputKind: command.outputKind,
             actionScript: command.actionScript,
             showResponse: command.showResponse == "TRUE" ? true : false,
@@ -400,7 +404,7 @@ export const InstallAllCommandsAction = (props: {
           const filteredCommands = Object.values(allCommands).filter(
             (cmd, index) =>
               Object.keys(allCommands)[index] != "--defaults-installed" &&
-              !Object.keys(allCommands)[index].startsWith("id-")
+              !Object.keys(allCommands)[index].startsWith("id-"),
           );
           setCommands(filteredCommands.map((data) => JSON.parse(data)));
         }

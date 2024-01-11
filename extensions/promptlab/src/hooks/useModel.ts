@@ -1,10 +1,12 @@
 import { AI, environment, getPreferenceValues } from "@raycast/api";
 import { useAI } from "@raycast/utils";
-import { ExtensionPreferences, Model, JSONObject } from "../utils/types";
+import { JSONObject } from "../lib/common/types";
+import { Model } from "../lib/models/types";
+import { ExtensionPreferences } from "../lib/preferences/types";
 import { useEffect, useRef, useState } from "react";
 import fetch, { Response } from "node-fetch";
 import { useModels } from "./useModels";
-import { filterString } from "../utils/context-utils";
+import { filterString } from "../lib/context-utils";
 
 /**
  * Gets the text response from the model endpoint.
@@ -19,7 +21,7 @@ export default function useModel(
   input: string,
   temperature: string,
   execute: boolean,
-  modelOverride?: Model
+  modelOverride?: Model,
 ) {
   const preferences = getPreferenceValues<ExtensionPreferences>();
   const [data, setData] = useState<string>("");
@@ -50,7 +52,7 @@ export default function useModel(
     outputTiming: "async",
     lengthLimit: "2500",
     temperature: "1.0",
-    name: "Text-Davinci-003 Via Raycast AI",
+    name: "GPT-3.5 Turbo Instruct Via Raycast AI",
     description: "",
     favorited: false,
     id: "",
@@ -124,12 +126,14 @@ export default function useModel(
   };
 
   // Add the authentication header if necessary
-  if (targetModel.authType == "apiKey") {
-    headers["Authorization"] = `Api-Key ${targetModel.apiKey.trim()}`;
-  } else if (targetModel.authType == "bearerToken") {
-    headers["Authorization"] = `Bearer ${targetModel.apiKey.trim()}`;
-  } else if (targetModel.authType == "x-api-key") {
-    headers["X-API-Key"] = `${targetModel.apiKey.trim()}`;
+  if (targetModel.apiKey.length != 0) {
+    if (targetModel.authType == "apiKey") {
+      headers["Authorization"] = `Api-Key ${targetModel.apiKey.trim()}`;
+    } else if (targetModel.authType == "bearerToken") {
+      headers["Authorization"] = `Bearer ${targetModel.apiKey.trim()}`;
+    } else if (targetModel.authType == "x-api-key") {
+      headers["X-API-Key"] = `${targetModel.apiKey.trim()}`;
+    }
   }
 
   const modelSchema = raycastModel
@@ -140,18 +144,18 @@ export default function useModel(
             "{prompt}",
             preferences.promptPrefix +
               prompt.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"') +
-              preferences.promptSuffix
+              preferences.promptSuffix,
           )
           .replace(
             "{basePrompt}",
-            preferences.promptPrefix + basePrompt.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"')
+            preferences.promptPrefix + basePrompt.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"'),
           )
           .replace(
             "{input}",
             targetModel.inputSchema.includes("{prompt") && prompt == input
               ? ""
-              : input.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"') + preferences.promptSuffix
-          )
+              : input.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"') + preferences.promptSuffix,
+          ),
       );
   if (preferences.includeTemperature) {
     modelSchema["temperature"] = temp;
@@ -171,17 +175,17 @@ export default function useModel(
             "{prompt}",
             preferences.promptPrefix +
               prompt.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"') +
-              preferences.promptSuffix
+              preferences.promptSuffix,
           )
           .replace(
             "{basePrompt}",
-            preferences.promptPrefix + basePrompt.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"')
+            preferences.promptPrefix + basePrompt.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"'),
           )
           .replace(
             "{input}",
             targetModel.inputSchema.includes("{prompt") && prompt == input
               ? ""
-              : input.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"') + preferences.promptSuffix
+              : input.replaceAll(/[\n\r\s]+/g, " ").replaceAll('"', '\\"') + preferences.promptSuffix,
           ),
       });
       const tag = basePrompt + prompt + input;
@@ -233,6 +237,21 @@ export default function useModel(
                 } catch (e) {
                   console.log((e as Error).message, line.substring(line.length - 100));
                 }
+              } else {
+                try {
+                  const jsonData = JSON.parse(line);
+                  const output = get(jsonData, targetModel.outputKeyPath) || "";
+                  if (output.toString().includes(text)) {
+                    text = output.toString();
+                  } else {
+                    text = text + output;
+                  }
+                  if (me?.tag == basePrompt + prompt + input) {
+                    setData(text);
+                  }
+                } catch (e) {
+                  console.log((e as Error).message, line.substring(line.length - 100));
+                }
               }
             });
           });
@@ -262,7 +281,7 @@ export default function useModel(
         ...useAI(filterString(preferences.promptPrefix + prompt + preferences.promptSuffix, 5000), {
           execute: execute,
           creativity: temp,
-          model: targetModel.endpoint == "Raycast AI 3.5" ? "gpt-3.5-turbo" : "text-davinci-003",
+          model: targetModel.endpoint == "Raycast AI 3.5" ? "gpt-3.5-turbo" : "gpt-3.5-turbo-instruct",
         }),
         dataTag: basePrompt + prompt + input,
         stopModel: stopModel,
